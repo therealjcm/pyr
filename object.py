@@ -4,7 +4,6 @@ import __main__
 
 class Object:
     # Generic object: player, monster, item, stairs...
-    # it is always represented by a character on con
 
     def __init__(self, map, x, y, char, name, color, blocks=False):
         self.map = map
