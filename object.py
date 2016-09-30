@@ -83,6 +83,7 @@ class Object:
             self.ai = kwargs['ai']
             self.ai.owner = self
 
+
     def move(self, **kwargs):
         # move to or attack to indicated offset
 
@@ -117,7 +118,7 @@ class Object:
 
         dx = int(round(dx / distance))
         dy = int(round(dy / distance))
-        self.move(dx=dx, dy=dy)
+        self._moveto(self.x+dx, self.y+dy)
 
     def distance_to(self, other):
         dx = other.x - self.x
