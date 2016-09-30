@@ -168,3 +168,10 @@ class Map:
             object.draw()
 
         libtcod.console_blit(self.con, 0, 0, self.width, self.height, 0, 0, 0)
+
+        # libtcod.console_set_default_foreground(self.con, libtcod.white)
+        libtcod.console_print_ex(0, 1, self.height+3, libtcod.BKGND_NONE,
+            libtcod.LEFT, 'HP: {}/{}'.format(
+                __main__.player.fighter.hp, __main__.player.fighter.max_hp
+            )
+        )

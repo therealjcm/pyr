@@ -3,15 +3,25 @@ import map
 import math
 import __main__
 
+def monster_death(monster):
+    print '{} is dead!'.format(monster.name.capitalize())
+    monster.char = '%'
+    monster.color = libtcod.dark_red
+    monster.blocks = False
+    monster.fighter = None
+    monster.ai = None
+    monster.name = 'remains of {}'.format(monster.name)
+    monster.send_to_back()
+
 def create_orc(map, x, y):
-    fighter = Fighter(hp=10, defense=4, power=4)
+    fighter = Fighter(hp=8, defense=3, power=4, death_function=monster_death)
     ai = BasicMonster()
     orc = Object(map, x, y, 'o', 'orc', libtcod.desaturated_green, blocks=True)
     orc.register_components(fighter=fighter, ai=ai)
     return orc
 
 def create_troll(map, x, y):
-    fighter = Fighter(hp=20, defense=8, power=8)
+    fighter = Fighter(hp=20, defense=4, power=8, death_function=monster_death)
     ai = BasicMonster()
     troll = Object(map, x, y, 'T', 'troll', libtcod.darker_green, blocks=True)
     troll.register_components(fighter=fighter, ai=ai)
@@ -92,9 +102,8 @@ class Object:
         y = self.y + kwargs['dy']
         target = None
         for object in self.map.objects:
-            if object.x == x and object.y == y:
-                if object.fighter != None:
-                    target = object
+            if object.x == x and object.y == y and object.fighter != None:
+                target = object
                 break
 
         if target is None:
@@ -138,3 +147,8 @@ class Object:
         libtcod.console_put_char_ex(self.con, self.x, self.y, '.',
             libtcod.white, libtcod.BKGND_SET)
             #libtcod.white, libtcod.dark_blue)
+
+    def send_to_back(self):
+        # make sure we get drawn over by pretty much anything else
+        self.map.objects.remove(self)
+        self.map.objects.insert(0, self)

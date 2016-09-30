@@ -17,6 +17,14 @@ ROOM_MAX_SIZE = 10
 ROOM_MIN_SIZE = 6
 MAX_ROOMS = 30
 
+def player_death(player):
+    global game_state
+    game_state = 'dead'
+    print 'You died!'
+    player.char = '%'
+    player.color = libtcod.dark_red
+    player.send_to_back()
+
 commands = {
     ord('h'): Command.MOVE_LEFT,
     ord('l'): Command.MOVE_RIGHT,
@@ -77,11 +85,12 @@ the_map = map.Map(MAP_WIDTH, MAP_HEIGHT, objects)
     MAX_ROOMS, ROOM_MIN_SIZE, ROOM_MAX_SIZE)
 the_map.fov_init()
 
-fighter = object.Fighter(hp=30, defense=6, power=6)
+fighter = object.Fighter(hp=30, defense=6, power=6, death_function=player_death)
 player = object.Object(the_map, player_x, player_y,
     '@', 'player', libtcod.white, blocks=True)
 player.register_components(fighter=fighter)
 objects.append(player)
+game_state = 'playing'
 
 while not libtcod.console_is_window_closed():
     turns = 0
@@ -99,3 +108,8 @@ while not libtcod.console_is_window_closed():
         for object in objects:
             if object.ai != None:
                 object.ai.take_turn()
+
+    if game_state == 'dead':
+        print "game over - press to continue"
+        libtcod.console_wait_for_keypress(True)
+        break
