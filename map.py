@@ -119,15 +119,13 @@ class Map:
             while True:
                 # until we get a coordinate pair not in use
                 (x, y) = rect.random_coord()
-                # x = libtcod.random_get_int(0, rect.x1+1, rect.x2-1)
-                # y = libtcod.random_get_int(0, rect.y1+1, rect.y2-1)
                 if not self.is_blocked(x, y): break
 
             # we have useful coordinates
             if d100() < 80:
-                monster = object.Object(self, x, y, 'o', 'orc', libtcod.desaturated_green, True)
+                monster = object.create_orc(self, x, y)
             else:
-                monster = object.Object(self, x, y, 'T', 'troll', libtcod.darker_green, True)
+                monster = object.create_troll(self, x, y)
             self.objects.append(monster)
 
     def create_h_tunnel(self, x1, x2, y):

@@ -42,10 +42,12 @@ commands = {
 }
 
 def handle_keys():
+    # handle input, return action description and number of turns
+    # to advance time
     key = libtcod.console_wait_for_keypress(True) # turn based
 
     if key.vk == libtcod.KEY_ESCAPE:
-        return True
+        return ('exit', 0)
 
     try:
         if key.vk == libtcod.KEY_CHAR:
@@ -54,9 +56,10 @@ def handle_keys():
             command = commands[key.vk]
     except KeyError as err:
         print "error: unbound key pressed, code: {}".format(err)
-        return False
+        return ('error', 0)
 
     command()
+    return ('play', 1)
 
 # main
 if __name__ != '__main__': sys.exit(0)
@@ -74,17 +77,25 @@ the_map = map.Map(MAP_WIDTH, MAP_HEIGHT, objects)
     MAX_ROOMS, ROOM_MIN_SIZE, ROOM_MAX_SIZE)
 the_map.fov_init()
 
+fighter = object.Fighter(hp=30, defense=6, power=6)
 player = object.Object(the_map, player_x, player_y,
-    '@', 'player', libtcod.white, True)
+    '@', 'player', libtcod.white, blocks=True)
+player.register_components(fighter=fighter)
 objects.append(player)
 
 while not libtcod.console_is_window_closed():
+    turns = 0
     the_map.render_all()
     libtcod.console_flush()
 
     for object in objects:
         object.clear()
 
-    exit = handle_keys()
-    if exit:
+    (action, turns) = handle_keys()
+    if action == 'exit':
         break
+
+    if turns > 0:
+        for object in objects:
+            if object.ai != None:
+                object.ai.take_turn()
