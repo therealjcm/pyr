@@ -18,15 +18,16 @@ color_light_wall = libtcod.Color(130, 110, 50)
 color_dark_ground = libtcod.Color(50, 50, 150)
 color_light_ground = libtcod.Color(200, 180, 50)
 
-con = libtcod.console_new(SCREEN_WIDTH, SCREEN_HEIGHT)
-panel = libtcod.console_new(SCREEN_WIDTH, PANEL_HEIGHT)
-
 def init():
+    global con, panel
     libtcod.console_set_custom_font('arial10x10.png',
         libtcod.FONT_TYPE_GREYSCALE | libtcod.FONT_LAYOUT_TCOD)
     libtcod.console_init_root(SCREEN_WIDTH, SCREEN_HEIGHT,
         'pyr mainscreen', False)
     libtcod.sys_set_fps(LIMIT_FPS)
+    con = libtcod.console_new(SCREEN_WIDTH, SCREEN_HEIGHT)
+    panel = libtcod.console_new(SCREEN_WIDTH, PANEL_HEIGHT)
+
 
 def render_bar(x, y, total_width, name, value, maximum, bar_color, back_color):
     bar_width = int(float(value) / maximum * total_width)
