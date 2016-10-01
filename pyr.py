@@ -5,13 +5,10 @@ import rect
 import map
 import sys
 from command import Command
-
-SCREEN_WIDTH = 80
-SCREEN_HEIGHT = 50
-LIMIT_FPS = 20
+import gui
 
 MAP_WIDTH = 80
-MAP_HEIGHT = 45
+MAP_HEIGHT = 43
 
 ROOM_MAX_SIZE = 10
 ROOM_MIN_SIZE = 6
@@ -72,12 +69,7 @@ def handle_keys():
 # main
 if __name__ != '__main__': sys.exit(0)
 
-libtcod.console_set_custom_font('arial10x10.png',
-    libtcod.FONT_TYPE_GREYSCALE | libtcod.FONT_LAYOUT_TCOD)
-libtcod.console_init_root(SCREEN_WIDTH, SCREEN_HEIGHT,
-    'pyr mainscreen', False)
-con = libtcod.console_new(SCREEN_WIDTH, SCREEN_HEIGHT)
-libtcod.sys_set_fps(LIMIT_FPS)
+gui.init()
 
 objects = []
 the_map = map.Map(MAP_WIDTH, MAP_HEIGHT, objects)
@@ -94,7 +86,7 @@ game_state = 'playing'
 
 while not libtcod.console_is_window_closed():
     turns = 0
-    the_map.render_all()
+    gui.render_all(the_map)
     libtcod.console_flush()
 
     for object in objects:

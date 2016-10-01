@@ -1,6 +1,7 @@
 import libtcodpy as libtcod
 import map
 import math
+import gui
 import __main__
 
 def monster_death(monster):
@@ -73,7 +74,6 @@ class Object:
     # Generic object: player, monster, item, stairs...
 
     def __init__(self, map, x, y, char, name, color, **kwargs):
-        self.con = __main__.con
         self.map = map
         self.x = x
         self.y = y
@@ -139,14 +139,13 @@ class Object:
 
     def draw(self):
         # set the color and draw the character at its position
-        libtcod.console_set_default_foreground(self.con, self.color)
-        libtcod.console_put_char(self.con, self.x, self.y, self.char, libtcod.BKGND_NONE)
+        libtcod.console_set_default_foreground(gui.con, self.color)
+        libtcod.console_put_char(gui.con, self.x, self.y, self.char, libtcod.BKGND_NONE)
 
     def clear(self):
         # erase the character that represents this object
-        libtcod.console_put_char_ex(self.con, self.x, self.y, '.',
-            libtcod.white, libtcod.BKGND_SET)
-            #libtcod.white, libtcod.dark_blue)
+        libtcod.console_put_char_ex(gui.con, self.x, self.y, '.',
+            libtcod.white, libtcod.BKGND_NONE)
 
     def send_to_back(self):
         # make sure we get drawn over by pretty much anything else

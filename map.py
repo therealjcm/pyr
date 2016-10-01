@@ -2,16 +2,12 @@ import libtcodpy as libtcod
 import tile
 import rect
 import object
+import gui
 import __main__
 
 FOV_ALGO = 0
 FOV_LIGHT_WALLS = True
 TORCH_RADIUS = 10
-
-color_dark_wall = libtcod.Color(0, 0, 100)
-color_light_wall = libtcod.Color(130, 110, 50)
-color_dark_ground = libtcod.Color(50, 50, 150)
-color_light_ground = libtcod.Color(200, 180, 50)
 
 def coin_flip():
     # return random 0 or 1
@@ -27,7 +23,6 @@ class Map:
         self.width = width
         self.height = height
         self.objects = objects
-        self.con = __main__.con
         self.fov_dirty = True # map is born needing fov
         self.fov_map = libtcod.map_new(width, height)
         self.map = [[ tile.Tile(True)
@@ -137,41 +132,3 @@ class Map:
         for y in range(min(y1, y2), max(y1, y2) + 1):
             self.map[x][y].blocked = False
             self.map[x][y].block_sight = False
-
-    def render_all(self):
-        # draw walls, floors and all the objects on this map
-        if self.fov_dirty:
-            self.fov_recompute(__main__.player)
-
-            for y in range(self.height):
-                for x in range(self.width):
-                    visible = libtcod.map_is_in_fov(self.fov_map, x, y)
-                    wall = self.map[x][y].block_sight
-                    if not visible:
-                        if self.map[x][y].explored:
-                            if wall:
-                                libtcod.console_put_char_ex(self.con, x, y, '#',
-                                    color_dark_wall, libtcod.BKGND_SET)
-                            else:
-                                libtcod.console_put_char_ex(self.con, x, y, '.',
-                                    color_dark_ground, libtcod.BKGND_SET)
-                    else:
-                        self.map[x][y].explored = True
-                        if wall:
-                            libtcod.console_put_char_ex(self.con, x, y, '#',
-                                color_light_wall, libtcod.BKGND_SET)
-                        else:
-                            libtcod.console_put_char_ex(self.con, x, y, '.',
-                                color_light_ground, libtcod.BKGND_SET)
-
-        for object in self.objects:
-            object.draw()
-
-        libtcod.console_blit(self.con, 0, 0, self.width, self.height, 0, 0, 0)
-
-        # libtcod.console_set_default_foreground(self.con, libtcod.white)
-        libtcod.console_print_ex(0, 1, self.height+3, libtcod.BKGND_NONE,
-            libtcod.LEFT, 'HP: {}/{}'.format(
-                __main__.player.fighter.hp, __main__.player.fighter.max_hp
-            )
-        )
