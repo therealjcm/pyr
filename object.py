@@ -5,7 +5,7 @@ import gui
 import __main__
 
 def monster_death(monster):
-    print '{} is dead!'.format(monster.name.capitalize())
+    gui.message('{} is dead!'.format(monster.name.capitalize()))
     monster.char = '%'
     monster.color = libtcod.dark_red
     monster.blocks = False
@@ -38,7 +38,8 @@ class BasicMonster:
             monster.move_towards(__main__.player.x, __main__.player.y)
         else:
             # close enough to attack
-            monster.fighter.attack(__main__.player)
+            if __main__.player.fighter.hp > 0:
+                monster.fighter.attack(__main__.player)
 
 
 class Fighter:
@@ -53,14 +54,14 @@ class Fighter:
         damage = self.power - target.fighter.defense
 
         if damage > 0:
-            print "{} attacks {} for {} hp damage!".format(
+            gui.message("{} attacks {} for {} hp damage!".format(
                 self.owner.name.capitalize(), target.name, damage
-            )
+            ))
             target.fighter.take_damage(damage)
         else:
-            print "{} attacks {} for no effect.".format(
+            gui.message("{} attacks {} for no effect.".format(
                 self.owner.name.capitalize(), target.name
-            )
+            ))
 
     def take_damage(self, damage):
         if damage > 0:

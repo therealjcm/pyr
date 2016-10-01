@@ -1,4 +1,5 @@
 import libtcodpy as libtcod
+import textwrap
 import __main__
 
 SCREEN_WIDTH = 80
@@ -19,7 +20,7 @@ color_dark_ground = libtcod.Color(50, 50, 150)
 color_light_ground = libtcod.Color(200, 180, 50)
 
 def init():
-    global con, panel
+    global con, panel, game_messages
     libtcod.console_set_custom_font('arial10x10.png',
         libtcod.FONT_TYPE_GREYSCALE | libtcod.FONT_LAYOUT_TCOD)
     libtcod.console_init_root(SCREEN_WIDTH, SCREEN_HEIGHT,
@@ -27,7 +28,20 @@ def init():
     libtcod.sys_set_fps(LIMIT_FPS)
     con = libtcod.console_new(SCREEN_WIDTH, SCREEN_HEIGHT)
     panel = libtcod.console_new(SCREEN_WIDTH, PANEL_HEIGHT)
+    game_messages = []
 
+def message(text, color=libtcod.white):
+    global game_messages
+    # wrap the message as needed
+    new_lines = textwrap.wrap(text, MSG_WIDTH)
+
+    for line in new_lines:
+        # check for overflow and remove oldest first if needed
+        if len(game_messages) == MSG_HEIGHT:
+            del game_messages[0]
+
+        # add new line as a tuple of text and color
+        game_messages.append((line, color))
 
 def render_bar(x, y, total_width, name, value, maximum, bar_color, back_color):
     bar_width = int(float(value) / maximum * total_width)
@@ -86,10 +100,9 @@ def render_all(map):
     libtcod.console_set_default_background(panel, libtcod.black)
     libtcod.console_clear(panel)
 
-    game_msgs = [("hello", libtcod.white), ("goodbye", libtcod.white)]
     # display messages, 1 line at a time
     y = 1
-    for (line, color) in game_msgs:
+    for (line, color) in game_messages:
         libtcod.console_set_default_foreground(panel, color)
         libtcod.console_print_ex(panel, MSG_X, y, libtcod.BKGND_NONE,
             libtcod.LEFT, line)

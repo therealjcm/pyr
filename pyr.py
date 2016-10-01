@@ -17,7 +17,7 @@ MAX_ROOMS = 30
 def player_death(player):
     global game_state
     game_state = 'dead'
-    print 'You died!'
+    gui.message('You died!', libtcod.red)
     player.char = '%'
     player.color = libtcod.dark_red
     player.send_to_back()
@@ -60,7 +60,7 @@ def handle_keys():
         else:
             command = commands[key.vk]
     except KeyError as err:
-        print "error: unbound key pressed, code: {}".format(err)
+        gui.message("error: unbound key pressed, code: {}".format(err))
         return ('error', 0)
 
     command()
@@ -102,6 +102,8 @@ while not libtcod.console_is_window_closed():
                 object.ai.take_turn()
 
     if game_state == 'dead':
-        print "game over - press to continue"
+        gui.message("game over - press almost any key to continue", libtcod.yellow)
+        gui.render_all(the_map)
+        libtcod.console_flush()
         libtcod.console_wait_for_keypress(True)
         break
