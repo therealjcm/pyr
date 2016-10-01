@@ -14,14 +14,14 @@ def monster_death(monster):
     monster.send_to_back()
 
 def create_orc(map, x, y):
-    fighter = Fighter(hp=8, defense=3, power=4, death_function=monster_death)
+    fighter = Fighter(hp=10, defense=0, power=3, death_function=monster_death)
     ai = BasicMonster()
     orc = Object(map, x, y, 'o', 'orc', libtcod.desaturated_green, blocks=True)
     orc.register_components(fighter=fighter, ai=ai)
     return orc
 
 def create_troll(map, x, y):
-    fighter = Fighter(hp=20, defense=4, power=8, death_function=monster_death)
+    fighter = Fighter(hp=15, defense=1, power=4, death_function=monster_death)
     ai = BasicMonster()
     troll = Object(map, x, y, 'T', 'troll', libtcod.darker_green, blocks=True)
     troll.register_components(fighter=fighter, ai=ai)

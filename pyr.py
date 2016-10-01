@@ -85,7 +85,7 @@ the_map = map.Map(MAP_WIDTH, MAP_HEIGHT, objects)
     MAX_ROOMS, ROOM_MIN_SIZE, ROOM_MAX_SIZE)
 the_map.fov_init()
 
-fighter = object.Fighter(hp=30, defense=6, power=6, death_function=player_death)
+fighter = object.Fighter(hp=30, defense=2, power=5, death_function=player_death)
 player = object.Object(the_map, player_x, player_y,
     '@', 'player', libtcod.white, blocks=True)
 player.register_components(fighter=fighter)
