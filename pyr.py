@@ -7,6 +7,8 @@ import sys
 from command import Command
 import gui
 
+KEY_TEXTINPUT = 66 # SDL2 textinput event
+
 MAP_WIDTH = 80
 MAP_HEIGHT = 43
 
@@ -60,6 +62,11 @@ def handle_keys():
     if gui.key.vk == libtcod.KEY_NONE:
         return ('idle', 0)
 
+    if gui.key.vk == KEY_TEXTINPUT:
+        # SDL2 sends both keydown and textinput events when key with
+        # printable representation is pressed
+        return ('ignore', 0)
+
     if gui.key.vk == libtcod.KEY_ESCAPE:
         return ('exit', 0)
 
@@ -87,7 +94,7 @@ the_map = map.Map(MAP_WIDTH, MAP_HEIGHT, objects)
     MAX_ROOMS, ROOM_MIN_SIZE, ROOM_MAX_SIZE)
 the_map.fov_init()
 
-fighter = object.Fighter(hp=30, defense=2, power=5, death_function=player_death)
+fighter = object.Fighter(hp=30, defense=2, power=5, ondeath=player_death)
 player = object.Object(the_map, player_x, player_y,
     '@', 'player', libtcod.white, blocks=True)
 player.register_components(fighter=fighter)

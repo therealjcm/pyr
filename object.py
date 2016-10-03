@@ -15,14 +15,14 @@ def monster_death(monster):
     monster.send_to_back()
 
 def create_orc(map, x, y):
-    fighter = Fighter(hp=10, defense=0, power=3, death_function=monster_death)
+    fighter = Fighter(hp=10, defense=0, power=3, ondeath=monster_death)
     ai = BasicMonster()
     orc = Object(map, x, y, 'o', 'orc', libtcod.desaturated_green, blocks=True)
     orc.register_components(fighter=fighter, ai=ai)
     return orc
 
 def create_troll(map, x, y):
-    fighter = Fighter(hp=15, defense=1, power=4, death_function=monster_death)
+    fighter = Fighter(hp=15, defense=1, power=4, ondeath=monster_death)
     ai = BasicMonster()
     troll = Object(map, x, y, 'T', 'troll', libtcod.darker_green, blocks=True)
     troll.register_components(fighter=fighter, ai=ai)
@@ -43,12 +43,16 @@ class BasicMonster:
 
 
 class Fighter:
-    def __init__(self, hp, defense, power, death_function=None):
+    def __init__(self, hp, defense, power, **kwargs):
         self.max_hp = hp
         self.hp = hp
         self.defense = defense
         self.power = power
-        self.death_function = death_function
+
+        self.death_function = kwargs.get('ondeath', None)
+        self.color_dmg = kwargs.get('color_dmg', libtcod.orange)
+        self.color_heal = kwargs.get('color_heal', libtcod.light_crimson)
+        self.color_whiff = kwargs.get('color_whiff', libtcod.light_sea)
 
     def attack(self, target):
         damage = self.power - target.fighter.defense
@@ -56,12 +60,12 @@ class Fighter:
         if damage > 0:
             gui.message("{} attacks {} for {} hp damage!".format(
                 self.owner.name.capitalize(), target.name, damage
-            ))
+            ), self.color_dmg)
             target.fighter.take_damage(damage)
         else:
             gui.message("{} attacks {} for no effect.".format(
                 self.owner.name.capitalize(), target.name
-            ))
+            ), self.color_whiff)
 
     def take_damage(self, damage):
         if damage > 0:
@@ -72,7 +76,8 @@ class Fighter:
                 function(self.owner)
 
     def heal(self, amount):
-        gui.message("{} is healed for {}".format(self.owner.name, amount), libtcod.purple)
+        gui.message("{} is healed for {}".format(self.owner.name, amount),
+            self.color_heal)
         self.hp = min(self.hp+amount, self.max_hp)
         return ('heal', 0)
 
