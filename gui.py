@@ -20,7 +20,7 @@ color_dark_ground = libtcod.Color(50, 50, 150)
 color_light_ground = libtcod.Color(200, 180, 50)
 
 def init():
-    global con, panel, game_messages
+    global con, panel, game_messages, mouse, key
     libtcod.console_set_custom_font('arial10x10.png',
         libtcod.FONT_TYPE_GREYSCALE | libtcod.FONT_LAYOUT_TCOD)
     libtcod.console_init_root(SCREEN_WIDTH, SCREEN_HEIGHT,
@@ -28,7 +28,19 @@ def init():
     libtcod.sys_set_fps(LIMIT_FPS)
     con = libtcod.console_new(SCREEN_WIDTH, SCREEN_HEIGHT)
     panel = libtcod.console_new(SCREEN_WIDTH, PANEL_HEIGHT)
+    mouse = libtcod.Mouse()
+    key = libtcod.Key()
     game_messages = []
+
+def get_names_at_mouse(map):
+    # if mouse pointer is not in FOV then nada
+    if not libtcod.map_is_in_fov(map.fov_map, mouse.cx, mouse.cy):
+        return ''
+
+    names = [obj.name for obj in map.objects
+        if obj.x == mouse.cx and obj.y == mouse.cy]
+    names = ', '.join(names)
+    return names.capitalize()
 
 def message(text, color=libtcod.white):
     global game_messages
@@ -111,6 +123,9 @@ def render_all(map):
     render_bar(1, 1, BAR_WIDTH, 'HP', __main__.player.fighter.hp,
         __main__.player.fighter.max_hp, libtcod.light_red, libtcod.darker_red)
 
-    ## libtcod.console_set_default_foreground(panel, libtcod.light_gray)
+    libtcod.console_set_default_foreground(panel, libtcod.light_gray)
+    libtcod.console_print_ex(panel, 1, 0, libtcod.BKGND_NONE, libtcod.LEFT,
+        get_names_at_mouse(map))
+
     # blit the bar to root console
     libtcod.console_blit(panel, 0, 0, SCREEN_WIDTH, PANEL_HEIGHT, 0, 0, PANEL_Y)

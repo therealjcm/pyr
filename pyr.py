@@ -14,6 +14,12 @@ ROOM_MAX_SIZE = 10
 ROOM_MIN_SIZE = 6
 MAX_ROOMS = 30
 
+def debug_print(obj):
+    print "----------------------"
+    for k in dir(obj):
+        if not k.startswith('__'):
+            print "{}: {}".format(k, str(getattr(obj, k)))
+
 def player_death(player):
     global game_state
     game_state = 'dead'
@@ -31,6 +37,7 @@ commands = {
     ord('u'): Command.MOVE_UP_RIGHT,
     ord('b'): Command.MOVE_DOWN_LEFT,
     ord('n'): Command.MOVE_DOWN_RIGHT,
+    ord('q'): Command.HEAL_PLAYER,
     libtcod.KEY_UP: Command.MOVE_UP,
     libtcod.KEY_DOWN: Command.MOVE_DOWN,
     libtcod.KEY_LEFT: Command.MOVE_LEFT,
@@ -49,22 +56,25 @@ commands = {
 def handle_keys():
     # handle input, return action description and number of turns
     # to advance time
-    key = libtcod.console_wait_for_keypress(True) # turn based
 
-    if key.vk == libtcod.KEY_ESCAPE:
+    if gui.key.vk == libtcod.KEY_NONE:
+        return ('idle', 0)
+
+    if gui.key.vk == libtcod.KEY_ESCAPE:
         return ('exit', 0)
 
     try:
-        if key.vk == libtcod.KEY_CHAR:
-            command = commands[key.c]
+        if gui.key.vk == libtcod.KEY_CHAR:
+            command = commands[gui.key.c]
         else:
-            command = commands[key.vk]
+            command = commands[gui.key.vk]
     except KeyError as err:
-        gui.message("error: unbound key pressed, code: {}".format(err))
+        gui.message("error: unbound key: {}".format(err))
+        debug_print(gui.key)
         return ('error', 0)
 
-    command()
-    return ('play', 1)
+    (action, turns) = command()
+    return (action, turns)
 
 # main
 if __name__ != '__main__': sys.exit(0)
@@ -84,8 +94,16 @@ player.register_components(fighter=fighter)
 objects.append(player)
 game_state = 'playing'
 
+gui.message("Welcome to the game, welcome to your doom!", libtcod.darkest_violet)
+
 while not libtcod.console_is_window_closed():
     turns = 0
+
+    event = libtcod.sys_check_for_event(
+        libtcod.EVENT_KEY_PRESS|libtcod.EVENT_MOUSE,
+        gui.key, gui.mouse
+    )
+
     gui.render_all(the_map)
     libtcod.console_flush()
 

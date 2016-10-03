@@ -71,6 +71,11 @@ class Fighter:
             if function is not None:
                 function(self.owner)
 
+    def heal(self, amount):
+        gui.message("{} is healed for {}".format(self.owner.name, amount), libtcod.purple)
+        self.hp = min(self.hp+amount, self.max_hp)
+        return ('heal', 0)
+
 class Object:
     # Generic object: player, monster, item, stairs...
 
@@ -97,6 +102,7 @@ class Object:
 
     def move(self, **kwargs):
         # move to or attack to indicated offset
+        # return action description and number of actions it takes
 
         # attempt to find an attackable object at indicated offset
         x = self.x + kwargs['dx']
@@ -110,9 +116,13 @@ class Object:
         if target is None:
             # try to move if we found no target
             self._moveto(x, y)
+            action = 'move'
         else:
             # since we have a target we should attack it
             self.fighter.attack(target)
+            action = 'fight'
+
+        return (action, 1)
 
     def _moveto(self, x, y):
         # move to square if it is not blocked
@@ -136,7 +146,8 @@ class Object:
         return math.sqrt(dx ** 2 + dy ** 2)
 
     def wait(self):
-        pass
+        # spend 1 action doing nothing
+        return ('wait', 1)
 
     def draw(self):
         # set the color and draw the character at its position

@@ -3,28 +3,31 @@ import __main__
 class Command:
     @staticmethod
     def MOVE_DOWN_LEFT():
-        __main__.player.move(dx=-1, dy=1)
+        return __main__.player.move(dx=-1, dy=1)
     @staticmethod
     def MOVE_DOWN():
-        __main__.player.move(dx=0, dy=1)
+        return __main__.player.move(dx=0, dy=1)
     @staticmethod
     def MOVE_DOWN_RIGHT():
-        __main__.player.move(dx=1, dy=1)
+        return __main__.player.move(dx=1, dy=1)
     @staticmethod
     def MOVE_LEFT():
-        __main__.player.move(dx=-1, dy=0)
+        return __main__.player.move(dx=-1, dy=0)
     @staticmethod
     def MOVE_RIGHT():
-        __main__.player.move(dx=1, dy=0)
+        return __main__.player.move(dx=1, dy=0)
     @staticmethod
     def MOVE_UP_LEFT():
-        __main__.player.move(dx=-1, dy=-1)
+        return __main__.player.move(dx=-1, dy=-1)
     @staticmethod
     def MOVE_UP():
-        __main__.player.move(dx=0, dy=-1)
+        return __main__.player.move(dx=0, dy=-1)
     @staticmethod
     def MOVE_UP_RIGHT():
-        __main__.player.move(dx=1, dy=-1)
+        return __main__.player.move(dx=1, dy=-1)
+    @staticmethod
+    def HEAL_PLAYER():
+        return __main__.player.fighter.heal(10)
 
     def __init__(self, methodname, *args, **kwargs):
         self.method = None
@@ -36,4 +39,4 @@ class Command:
         if self.method == None:
             print "debug: eval {}".format(self.methodname)
             self.method = eval(self.methodname)
-        self.method(*self.args, **self.kwargs)
+        return self.method(*self.args, **self.kwargs)
