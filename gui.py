@@ -9,6 +9,8 @@ LIMIT_FPS = 20
 PANEL_HEIGHT = 7
 BAR_WIDTH = 20
 
+INVENTORY_WIDTH = 50
+
 PANEL_Y = SCREEN_HEIGHT - PANEL_HEIGHT
 MSG_X = BAR_WIDTH + 2
 MSG_WIDTH = SCREEN_WIDTH - BAR_WIDTH - 2
@@ -54,6 +56,52 @@ def message(text, color=libtcod.white):
 
         # add new line as a tuple of text and color
         game_messages.append((line, color))
+
+def menu(header, options, width):
+    if len(options) > 26: raise ValueError('menu allows 26 options maximum')
+
+    header_height = libtcod.console_get_height_rect(
+        con, 0, 0, width, SCREEN_HEIGHT, header)
+    height = len(options) + header_height
+
+    window = libtcod.console_new(width, height)
+
+    libtcod.console_set_default_foreground(window, libtcod.white)
+    libtcod.console_print_rect_ex(window, 0, 0, width, height,
+        libtcod.BKGND_NONE, libtcod.LEFT, header)
+
+    y = header_height
+    letter_index = ord('a')
+    for option_text in options:
+        text = "({}) {}".format(chr(letter_index), option_text)
+        libtcod.console_print_ex(window, 0, y, libtcod.BKGND_NONE,
+            libtcod.LEFT, text)
+        y += 1
+        letter_index += 1
+
+    # render to root console
+    x = SCREEN_WIDTH/2 - width/2
+    y = SCREEN_HEIGHT/2 - height/2
+    libtcod.console_blit(window, 0, 0, width, height, 0, x, y, 1.0, 0.7)
+    libtcod.console_flush()
+    menu_key = libtcod.console_wait_for_keypress(True)
+
+    index = menu_key.c - ord('a')
+    if index >= 0 and index < len(options): return index
+    return None
+
+def inventory_menu(header):
+    items = __main__.player.inventory.items
+    if len(items) == 0:
+        options = ['inventory is empty']
+    else:
+        options = [item.name for item in items]
+
+    index = menu(header, options, INVENTORY_WIDTH)
+    if index is None or len(items) == 0: return ('backpack', 0)
+    # activate the item
+    __main__.player.inventory.use(index, __main__.player)
+    return ('backpack', 1)
 
 def render_bar(x, y, total_width, name, value, maximum, bar_color, back_color):
     bar_width = int(float(value) / maximum * total_width)

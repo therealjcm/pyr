@@ -28,6 +28,19 @@ def create_troll(map, x, y):
     troll.register_components(fighter=fighter, ai=ai)
     return troll
 
+def healing_potion(subject):
+    hp = libtcod.random_get_int(0, 1, 10)
+    subject.fighter.heal(hp)
+    gui.message("{} drinks a healing potion and is healed {} hp".format(
+        subject.name, hp
+    ), libtcod.pink)
+
+def create_healing_potion(map, x, y):
+    potion = Object(map, x, y, '!', 'healing_potion', libtcod.violet)
+    item_logic = Item(healing_potion)
+    potion.register_components(item=item_logic)
+    return potion
+
 class BasicMonster:
     def take_turn(self):
         monster = self.owner
@@ -41,6 +54,37 @@ class BasicMonster:
             if __main__.player.fighter.hp > 0:
                 monster.fighter.attack(__main__.player)
 
+class Item:
+    def __init__(self, use_fn):
+        self.use_fn = use_fn
+    def use(self, subject):
+        print "item use"
+        self.use_fn(subject)
+
+class PlayerInventory:
+    def __init__(self):
+        self.items = []
+
+    def pick_up(self, item):
+        # true if item successfully picked up
+        print "inventory pick_up"
+        if len (self.items) >= 26:
+            gui.message("{} inventory full, cannot pick up {}".format(
+                self.owner.name, item.name
+            ), libtcod.dark_yellow)
+            return False
+        else:
+            gui.message("{} picked up {}".format(
+                self.owner.name, item.name
+                ), libtcod.dark_green)
+            self.items.append(item)
+            return True
+
+    def use(self, index, subject):
+        print "inv use"
+        item = self.items[index].item
+        item.use(subject)
+        del self.items[index]
 
 class Fighter:
     def __init__(self, hp, defense, power, **kwargs):
@@ -95,6 +139,8 @@ class Object:
         self.blocks = kwargs.get('blocks', False)
         self.fighter = None
         self.ai = None
+        self.inventory = None
+        self.item = None
 
     def register_components(self, **kwargs):
         if 'fighter' in kwargs:
@@ -103,7 +149,22 @@ class Object:
         if 'ai' in kwargs:
             self.ai = kwargs['ai']
             self.ai.owner = self
+        if 'inventory' in kwargs:
+            self.inventory = kwargs['inventory']
+            self.inventory.owner = self
+        if 'item' in kwargs:
+            self.item = kwargs['item']
+            self.item.owner = self
 
+    def pick_up(self):
+        # pick up first item at current location
+        for item in self.map.objects:
+            if item.item != None and item.x == self.x and item.y == self.y:
+                if self.inventory.pick_up(item):
+                    self.map.objects.remove(item)
+                    return ('pickup', 1)
+        # if we got to the end then there was nothing picked up
+        return ('pickup', 0)
 
     def move(self, **kwargs):
         # move to or attack to indicated offset

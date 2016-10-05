@@ -17,6 +17,11 @@ def d100():
     # return 1-100
     return libtcod.random_get_int(0, 1, 100)
 
+def d6(n=1):
+    # return 1-6 per die
+    dice = [libtcod.random_get_int(0, 1, 6) for i in range(n)]
+    return sum(dice)
+
 class Map:
     # the play field
     def __init__(self, width, height, objects):
@@ -106,10 +111,10 @@ class Map:
                 self.map[x][y].block_sight = False
 
     def populate_room(self, rect):
-        # place monsters within room defined by rectangle
+        # place monsters and treasures within room defined by rectangle
+        treasure_dice = rect.size() / 12
         max_monsters = rect.size() / 8
         num_monsters = libtcod.random_get_int(0, 0, max_monsters)
-        positions = set()
         for i in range(num_monsters):
             while True:
                 # until we get a coordinate pair not in use
@@ -121,7 +126,22 @@ class Map:
                 monster = object.create_orc(self, x, y)
             else:
                 monster = object.create_troll(self, x, y)
+                # trolls have better treasure
+                treasure_dice += 1
             self.objects.append(monster)
+
+        treasure_value = d6(treasure_dice)
+        while treasure_value > 0:
+            while True:
+                (x, y) = rect.random_coord()
+                # treasure can stack on other objects, so ignore objects
+                if not self.map[x][y].blocked: break
+            treasure_value -= 6
+            item = object.create_healing_potion(self, x, y)
+            self.objects.append(item)
+            item.send_to_back() # draw last
+
+
 
     def create_h_tunnel(self, x1, x2, y):
         for x in range(min(x1, x2), max(x1, x2) + 1):

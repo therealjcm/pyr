@@ -1,4 +1,5 @@
 import __main__
+import gui
 
 class Command:
     @staticmethod
@@ -26,8 +27,11 @@ class Command:
     def MOVE_UP_RIGHT():
         return __main__.player.move(dx=1, dy=-1)
     @staticmethod
-    def HEAL_PLAYER():
-        return __main__.player.fighter.heal(10)
+    def PICK_UP():
+        return __main__.player.pick_up()
+    @staticmethod
+    def SHOW_INVENTORY():
+        return gui.inventory_menu('Press key next to item to use it, esc to cancel')
 
     def __init__(self, methodname, *args, **kwargs):
         self.method = None

@@ -31,6 +31,8 @@ def player_death(player):
     player.send_to_back()
 
 commands = {
+    ord('i'): Command.SHOW_INVENTORY,
+    ord('g'): Command.PICK_UP,
     ord('h'): Command.MOVE_LEFT,
     ord('l'): Command.MOVE_RIGHT,
     ord('j'): Command.MOVE_DOWN,
@@ -39,7 +41,6 @@ commands = {
     ord('u'): Command.MOVE_UP_RIGHT,
     ord('b'): Command.MOVE_DOWN_LEFT,
     ord('n'): Command.MOVE_DOWN_RIGHT,
-    ord('q'): Command.HEAL_PLAYER,
     libtcod.KEY_UP: Command.MOVE_UP,
     libtcod.KEY_DOWN: Command.MOVE_DOWN,
     libtcod.KEY_LEFT: Command.MOVE_LEFT,
@@ -95,9 +96,10 @@ the_map = map.Map(MAP_WIDTH, MAP_HEIGHT, objects)
 the_map.fov_init()
 
 fighter = object.Fighter(hp=30, defense=2, power=5, ondeath=player_death)
+inventory = object.PlayerInventory()
 player = object.Object(the_map, player_x, player_y,
     '@', 'player', libtcod.white, blocks=True)
-player.register_components(fighter=fighter)
+player.register_components(fighter=fighter, inventory=inventory)
 objects.append(player)
 game_state = 'playing'
 
