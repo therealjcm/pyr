@@ -47,14 +47,14 @@ def scroll_zap(source):
     dmg = libtcod.random_get_int(0, 10, 20)
     target = source.nearest_enemy(ZAP_MAX_DISTANCE)
     if target == None:
-        gui.message("{} wastes a zap scroll attacking the darkness".format(
-            source.name
-        ), libtcod.darkest_cyan)
+        gui.message("There is nothing to zap", libtcod.darkest_cyan)
+        return 'canceled'
     else:
         gui.message("{} zaps {} for {} damage".format(
             source.name, target.name, dmg
         ), libtcod.darkest_cyan)
         target.fighter.take_damage(dmg)
+        return 'completed'
 
 def create_scroll_zap(map, x, y):
     scroll = Object(map, x, y, '?', 'zap scroll', libtcod.darkest_cyan)
@@ -79,7 +79,7 @@ class Item:
     def __init__(self, use_fn):
         self.use_fn = use_fn
     def use(self, subject):
-        self.use_fn(subject)
+        return self.use_fn(subject)
 
 class PlayerInventory:
     def __init__(self):
@@ -101,8 +101,8 @@ class PlayerInventory:
 
     def use(self, index, subject):
         item = self.items[index].item
-        item.use(subject)
-        del self.items[index]
+        if item.use(subject) != 'canceled':
+            del self.items[index]
 
 class Fighter:
     def __init__(self, hp, defense, power, **kwargs):
@@ -249,8 +249,10 @@ class Object:
 
     def draw(self):
         # set the color and draw the character at its position
-        libtcod.console_set_default_foreground(gui.con, self.color)
-        libtcod.console_put_char(gui.con, self.x, self.y, self.char, libtcod.BKGND_NONE)
+        if libtcod.map_is_in_fov(self.map.fov_map, self.x, self.y):
+            # only draw what is visible to the player
+            libtcod.console_set_default_foreground(gui.con, self.color)
+            libtcod.console_put_char(gui.con, self.x, self.y, self.char, libtcod.BKGND_NONE)
 
     def clear(self):
         # erase the character that represents this object
