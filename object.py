@@ -4,6 +4,8 @@ import math
 import gui
 import __main__
 
+ZAP_MAX_DISTANCE = 10
+
 def monster_death(monster):
     gui.message('{} is dead!'.format(monster.name.capitalize()))
     monster.char = '%'
@@ -36,10 +38,29 @@ def healing_potion(subject):
     ), libtcod.pink)
 
 def create_healing_potion(map, x, y):
-    potion = Object(map, x, y, '!', 'healing_potion', libtcod.violet)
+    potion = Object(map, x, y, '!', 'healing potion', libtcod.violet)
     item_logic = Item(healing_potion)
     potion.register_components(item=item_logic)
     return potion
+
+def scroll_zap(source):
+    dmg = libtcod.random_get_int(0, 10, 20)
+    target = source.nearest_enemy(ZAP_MAX_DISTANCE)
+    if target == None:
+        gui.message("{} wastes a zap scroll attacking the darkness".format(
+            source.name
+        ), libtcod.darkest_cyan)
+    else:
+        gui.message("{} zaps {} for {} damage".format(
+            source.name, target.name, dmg
+        ), libtcod.darkest_cyan)
+        target.fighter.take_damage(dmg)
+
+def create_scroll_zap(map, x, y):
+    scroll = Object(map, x, y, '?', 'zap scroll', libtcod.darkest_cyan)
+    item_logic = Item(scroll_zap)
+    scroll.register_components(item=item_logic)
+    return scroll
 
 class BasicMonster:
     def take_turn(self):
@@ -58,7 +79,6 @@ class Item:
     def __init__(self, use_fn):
         self.use_fn = use_fn
     def use(self, subject):
-        print "item use"
         self.use_fn(subject)
 
 class PlayerInventory:
@@ -67,7 +87,6 @@ class PlayerInventory:
 
     def pick_up(self, item):
         # true if item successfully picked up
-        print "inventory pick_up"
         if len (self.items) >= 26:
             gui.message("{} inventory full, cannot pick up {}".format(
                 self.owner.name, item.name
@@ -81,7 +100,6 @@ class PlayerInventory:
             return True
 
     def use(self, index, subject):
-        print "inv use"
         item = self.items[index].item
         item.use(subject)
         del self.items[index]
@@ -155,6 +173,20 @@ class Object:
         if 'item' in kwargs:
             self.item = kwargs['item']
             self.item.owner = self
+
+    def nearest_enemy(self, max_range):
+        nearest = None
+        nearest_dist = max_range + 1
+        for object in self.map.objects:
+            if not object.fighter or object == self: continue
+            if not libtcod.map_is_in_fov(self.map.fov_map, object.x, object.y):
+                continue
+            distance = self.distance_to(object)
+            if distance < nearest_dist:
+                nearest = object
+                nearest_dist = distance
+        return nearest
+
 
     def pick_up(self):
         # pick up first item at current location

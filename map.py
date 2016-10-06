@@ -136,8 +136,13 @@ class Map:
                 (x, y) = rect.random_coord()
                 # treasure can stack on other objects, so ignore objects
                 if not self.map[x][y].blocked: break
-            treasure_value -= 6
-            item = object.create_healing_potion(self, x, y)
+            if d100() < 60:
+                treasure_value -= 6
+                item = object.create_healing_potion(self, x, y)
+            else:
+                treasure_value -= 10
+                item = object.create_scroll_zap(self, x, y)
+
             self.objects.append(item)
             item.send_to_back() # draw last
 
