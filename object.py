@@ -187,7 +187,6 @@ class Object:
                 nearest_dist = distance
         return nearest
 
-
     def pick_up(self):
         # pick up first item at current location
         for item in self.map.objects:
@@ -249,15 +248,16 @@ class Object:
 
     def draw(self):
         # set the color and draw the character at its position
-        if libtcod.map_is_in_fov(self.map.fov_map, self.x, self.y):
+        if libtcod.map_is_in_fov(self.map.fov_map, self.x, self.y) or self.name == 'room_name':
             # only draw what is visible to the player
             libtcod.console_set_default_foreground(gui.con, self.color)
             libtcod.console_put_char(gui.con, self.x, self.y, self.char, libtcod.BKGND_NONE)
 
     def clear(self):
         # erase the character that represents this object
-        libtcod.console_put_char_ex(gui.con, self.x, self.y, '.',
-            libtcod.white, libtcod.BKGND_NONE)
+        if libtcod.map_is_in_fov(self.map.fov_map, self.x, self.y) and self.name != 'room_name':
+            libtcod.console_put_char_ex(gui.con, self.x, self.y, '.',
+                libtcod.white, libtcod.BKGND_NONE)
 
     def send_to_back(self):
         # make sure we get drawn over by pretty much anything else

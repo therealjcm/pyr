@@ -94,8 +94,8 @@ class Map:
                     self.create_v_tunnel(prev_y, new_y, prev_x)
                     self.create_h_tunnel(prev_x, new_x, new_y)
 
-                self.objects.insert(0, object.Object(self, new_x, new_y,
-                    chr(65+room_index), 'room_name', libtcod.white))
+            self.objects.insert(0, object.Object(self, new_x, new_y,
+                chr(65+room_index), 'room_name', libtcod.white))
             rooms.append(new_room)
             room_index += 1
         return player_start
