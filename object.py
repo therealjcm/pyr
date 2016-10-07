@@ -4,7 +4,8 @@ import math
 import gui
 import __main__
 
-ZAP_MAX_DISTANCE = 10
+ZAP_MAX_DISTANCE    = 10
+CONFUSE_TURNS       = 10
 
 def monster_death(monster):
     gui.message('{} is dead!'.format(monster.name.capitalize()))
@@ -29,6 +30,27 @@ def create_troll(map, x, y):
     troll = Object(map, x, y, 'T', 'troll', libtcod.darker_green, blocks=True)
     troll.register_components(fighter=fighter, ai=ai)
     return troll
+
+def scroll_confuse(source):
+    target = source.nearest_enemy(ZAP_MAX_DISTANCE)
+    if target.ai == None:
+        gui.message("{} is not a valid target for confuse".format(
+            target.name
+        ), libtcod.white)
+        return 'canceled'
+    else:
+        old_ai = target.ai
+        target.register_components(ai=ConfusedMonster(old_ai))
+        gui.message("{} looks confused".format(
+            target.name
+        ), libtcod.light_lime)
+        return 'completed'
+
+def create_scroll_confuse(map, x, y):
+    scroll = Object(map, x, y, '?', 'confusion scroll', libtcod.yellow)
+    item_logic = Item(scroll_confuse)
+    scroll.register_components(item=item_logic)
+    return scroll
 
 def healing_potion(subject):
     hp = libtcod.random_get_int(0, 1, 10)
@@ -74,6 +96,23 @@ class BasicMonster:
             # close enough to attack
             if __main__.player.fighter.hp > 0:
                 monster.fighter.attack(__main__.player)
+
+class ConfusedMonster:
+    def __init__(self, old_ai, num_turns=CONFUSE_TURNS):
+        self.old_ai = old_ai
+        self.num_turns = num_turns
+    def take_turn(self):
+        # move/attack in random direction
+        if self.num_turns > 0:
+            x = libtcod.random_get_int(0, -1, 1)
+            y = libtcod.random_get_int(0, -1, 1)
+            self.owner.move(dx=x, dy=y)
+            self.num_turns -= 1
+        else:
+            self.owner.ai = self.old_ai
+            gui.message("{} is no longer confused!".format(
+                self.owner.name
+            ), libtcod.red)
 
 class Item:
     def __init__(self, use_fn):
