@@ -1,6 +1,7 @@
 import libtcodpy as libtcod
 import textwrap
 import __main__
+import pprint
 
 SCREEN_WIDTH = 80
 SCREEN_HEIGHT = 50
@@ -56,6 +57,107 @@ def message(text, color=libtcod.white):
 
         # add new line as a tuple of text and color
         game_messages.append((line, color))
+
+class CoordPath:
+    NW =    (-1, -1)
+    N =     (0, -1)
+    NE =    (1, -1)
+    E =     (1, 0)
+    SE =    (1, 1)
+    S =     (0, 1)
+    SW =    (-1, 1)
+    W =     (-1, 0)
+    directions = {
+        ord('h'): W,
+        ord('l'): E,
+        ord('j'): S,
+        ord('k'): N,
+        ord('y'): NW,
+        ord('u'): NE,
+        ord('b'): SW,
+        ord('n'): SE,
+        libtcod.KEY_UP: N,
+        libtcod.KEY_DOWN: S,
+        libtcod.KEY_LEFT: W,
+        libtcod.KEY_RIGHT: E,
+        libtcod.KEY_KP9: NE,
+        libtcod.KEY_KP8: N,
+        libtcod.KEY_KP7: NW,
+        libtcod.KEY_KP5: (0, 0),
+        libtcod.KEY_KP4: W,
+        libtcod.KEY_KP6: E,
+        libtcod.KEY_KP1: SW,
+        libtcod.KEY_KP2: S,
+        libtcod.KEY_KP3: SE
+    }
+    def __init__(self, source):
+        self.coord_list = []
+        self.x = source.x
+        self.y = source.y
+    def length(self):
+        return len(self.coord_list)
+    def is_source(self, x, y):
+        if self.x == x and self.y == y: return True
+        return False
+
+def mode_targeting(source, max_distance, filter=None):
+    # returns list of coordinate tuples
+    # displays highlighted path to current cursor
+    global key, mouse
+    path = CoordPath(source)
+    (cursor_x, cursor_y) = (source.x, source.y)
+    while True:
+        libtcod.console_flush()
+        libtcod.sys_check_for_event(libtcod.EVENT_KEY_PRESS|libtcod.EVENT_MOUSE,
+            key, mouse)
+        if key.vk == libtcod.KEY_NONE: continue # next key
+        if key.vk == __main__.KEY_TEXTINPUT: continue # discard text event
+        if key.vk == libtcod.KEY_ESCAPE:
+            # bail and redraw without path
+            source.map.fov_dirty = True
+            render_all(source.map)
+            return []
+        try:
+            if key.vk == libtcod.KEY_CHAR:
+                (dx, dy) = CoordPath.directions[key.c]
+            else:
+                (dx, dy) = CoordPath.directions[key.vk]
+        except KeyError as err:
+            message("error: unbound key: {}".format(err))
+            (dx, dy) = (0, 0)
+
+        # got a valid direction
+        new_x = cursor_x + dx
+        new_y = cursor_y + dy
+        update_cursor = False
+
+        if (new_x, new_y) in path.coord_list:
+            # backtracking, remove the previous tile and update cursor
+            path.coord_list.pop()
+            update_cursor = True
+
+        if (new_x, new_y) not in path.coord_list and path.length() < max_distance:
+            update_cursor = True
+
+        if (path.is_source(new_x, new_y)):
+            if path.length() == 1:
+                path = CoordPath(source)
+                (cursor_x, cursor_y) = (source.x, source.y)
+                source.map.fov_dirty = True
+                render_all(source.map)
+            continue # either way we restart the loop
+
+        if update_cursor:
+            cursor_x = new_x
+            cursor_y = new_y
+
+        if (cursor_x, cursor_y) not in path.coord_list:
+            path.coord_list.append((cursor_x, cursor_y))
+        source.map.fov_dirty = True
+        render_all(source.map, path.coord_list)
+
+    return path.coord_list
+
 
 def menu(header, options, width):
     if len(options) > 26: raise ValueError('menu allows 26 options maximum')
@@ -124,7 +226,7 @@ def render_bar(x, y, total_width, name, value, maximum, bar_color, back_color):
         )
     )
 
-def render_all(map):
+def render_all(map, path=[]):
     # draw walls, floors and all the objects on this map
     if map.fov_dirty:
         map.fov_recompute(__main__.player)
@@ -133,22 +235,26 @@ def render_all(map):
             for x in range(map.width):
                 visible = libtcod.map_is_in_fov(map.fov_map, x, y)
                 wall = map.map[x][y].block_sight
+                if (x, y) in path:
+                    bkgnd = libtcod.light_grey
+                else:
+                    bkgnd = libtcod.BKGND_SET
                 if not visible:
                     if map.map[x][y].explored:
                         if wall:
                             libtcod.console_put_char_ex(con, x, y, '#',
-                                color_dark_wall, libtcod.BKGND_SET)
+                                color_dark_wall, bkgnd)
                         else:
                             libtcod.console_put_char_ex(con, x, y, '.',
-                                color_dark_ground, libtcod.BKGND_SET)
+                                color_dark_ground, bkgnd)
                 else:
                     map.map[x][y].explored = True
                     if wall:
                         libtcod.console_put_char_ex(con, x, y, '#',
-                            color_light_wall, libtcod.BKGND_SET)
+                            color_light_wall, bkgnd)
                     else:
                         libtcod.console_put_char_ex(con, x, y, '.',
-                            color_light_ground, libtcod.BKGND_SET)
+                            color_light_ground, bkgnd)
 
     for object in map.objects:
         object.draw()

@@ -32,6 +32,10 @@ class Command:
     @staticmethod
     def SHOW_INVENTORY():
         return gui.inventory_menu('Press key next to item to use it, esc to cancel')
+    @staticmethod
+    def TARGETING():
+        path = gui.mode_targeting(__main__.player, 10)
+        return ('targeting', 0)
 
     def __init__(self, methodname, *args, **kwargs):
         self.method = None

@@ -33,6 +33,9 @@ def create_troll(map, x, y):
 
 def scroll_confuse(source):
     target = source.nearest_enemy(ZAP_MAX_DISTANCE)
+    if target == None:
+        gui.message("nothing in range of confuse", libtcod.white)
+        return 'canceled'
     if target.ai == None:
         gui.message("{} is not a valid target for confuse".format(
             target.name

@@ -31,6 +31,7 @@ def player_death(player):
     player.send_to_back()
 
 commands = {
+    ord('t'): Command.TARGETING,
     ord('i'): Command.SHOW_INVENTORY,
     ord('g'): Command.PICK_UP,
     ord('h'): Command.MOVE_LEFT,
