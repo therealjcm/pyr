@@ -131,7 +131,15 @@ def mode_targeting(source, max_distance, filter=None):
         new_y = cursor_y + dy
         update_cursor = False
 
+        # XXX
+        if path.length() > 0:
+            print "last={}, new_x={}, new_y={}, cursor_x={}, cursor_y={}, dx={}. dy={}".format(
+                path.coord_list[-1], new_x, new_y, cursor_x, cursor_y, dx, dy
+            )
+            pprint.pprint(path.coord_list)
+
         if (new_x, new_y) in path.coord_list:
+            print "reverted!"
             # backtracking, remove the previous tile and update cursor
             path.coord_list.pop()
             update_cursor = True
